@@ -1,0 +1,427 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover"/>
+<meta name="apple-mobile-web-app-capable" content="yes"/>
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"/>
+<meta name="apple-mobile-web-app-title" content="Recovery"/>
+<title>Recovery Tracker</title>
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&family=Righteous&display=swap" rel="stylesheet"/>
+<style>
+*{box-sizing:border-box;margin:0;padding:0;}
+body{background:#08060f;color:#f0eaff;font-family:'Nunito',sans-serif;min-height:100vh;overscroll-behavior:none;}
+#app{max-width:540px;margin:0 auto;min-height:100vh;position:relative;}
+@keyframes shimmer{0%{background-position:0% 50%}100%{background-position:200% 50%}}
+@keyframes pulse-glow{0%,100%{box-shadow:0 0 10px #b96eff99,0 0 24px #ff6ef755}50%{box-shadow:0 0 22px #b96effdd,0 0 48px #ff6ef799}}
+@keyframes float{0%,100%{transform:translateY(0)rotate(-2deg)}50%{transform:translateY(-6px)rotate(2deg)}}
+@keyframes pop-in{0%{transform:scale(0.6)rotate(-5deg);opacity:0}70%{transform:scale(1.12)rotate(2deg)}100%{transform:scale(1)rotate(0);opacity:1}}
+@keyframes orb-drift{0%,100%{transform:translate(0,0)scale(1)}33%{transform:translate(20px,-15px)scale(1.05)}66%{transform:translate(-10px,10px)scale(0.97)}}
+.shimmer-bg{background:linear-gradient(90deg,#ff6ef7,#b96eff,#6ee2ff,#6effd8,#ffe16e,#ff6ef7);background-size:300% auto;animation:shimmer 3s linear infinite;}
+.rainbow-text{background:linear-gradient(90deg,#ff6ef7,#b96eff,#6ee2ff,#6effd8,#ff6ef7);background-size:200% auto;-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;animation:shimmer 3s linear infinite;}
+.pulse{animation:pulse-glow 2.5s ease-in-out infinite;}
+.float-anim{animation:float 3s ease-in-out infinite;display:inline-block;}
+.pop-in{animation:pop-in 0.4s cubic-bezier(.175,.885,.32,1.275) forwards;}
+.orb{animation:orb-drift 8s ease-in-out infinite;position:absolute;border-radius:50%;pointer-events:none;}
+.day-btn{transition:transform .15s,box-shadow .15s;cursor:pointer;}
+.day-btn:active{transform:scale(0.95);}
+.check-row{transition:background .15s;cursor:pointer;}
+.tab-btn{transition:color .2s,border-color .2s;cursor:pointer;background:none;border:none;font-family:'Nunito',sans-serif;}
+.orbs-wrap{position:fixed;inset:0;pointer-events:none;z-index:0;overflow:hidden;}
+.content-wrap{position:relative;z-index:1;}
+/* sticky tabs */
+.tabs-bar{display:flex;background:rgba(8,6,15,0.92);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);position:sticky;top:0;z-index:10;border-bottom:1px solid #1e1030;}
+/* celebration overlay */
+#celebration{position:fixed;inset:0;background:rgba(8,6,15,0.88);display:flex;align-items:center;justify-content:center;z-index:200;display:none;}
+#celebration.show{display:flex;}
+.celeb-inner{position:relative;border-radius:26px;padding:3px;background:linear-gradient(135deg,#ff6ef7,#b96eff,#6ee2ff,#6effd8,#ff6ef7);background-size:200%;animation:shimmer 2s linear infinite;}
+.celeb-body{background:#0e0a1a;border-radius:24px;padding:40px 54px;text-align:center;}
+textarea{background:#08060f;border:1px solid #2a1545;border-radius:10px;padding:10px 12px;color:#f0eaff;font-size:13px;font-family:'Nunito',sans-serif;resize:none;width:100%;}
+input[type=number]{background:#08060f;border-radius:8px;padding:7px 10px;color:#f0eaff;font-size:14px;font-family:'Nunito',sans-serif;width:72px;}
+button{font-family:'Nunito',sans-serif;}
+</style>
+</head>
+<body>
+<div id="app">
+  <div class="orbs-wrap">
+    <div class="orb" style="width:380px;height:380px;background:radial-gradient(circle,#b96eff28 0%,transparent 70%);top:-100px;left:-100px;animation-delay:0s;"></div>
+    <div class="orb" style="width:300px;height:300px;background:radial-gradient(circle,#ff6ef728 0%,transparent 70%);top:120px;right:-80px;animation-delay:2s;"></div>
+    <div class="orb" style="width:260px;height:260px;background:radial-gradient(circle,#6ee2ff20 0%,transparent 70%);bottom:250px;left:-40px;animation-delay:4s;"></div>
+    <div class="orb" style="width:220px;height:220px;background:radial-gradient(circle,#6effd820 0%,transparent 70%);bottom:60px;right:0;animation-delay:1s;"></div>
+  </div>
+
+  <div id="celebration">
+    <div class="celeb-inner pop-in">
+      <div class="celeb-body">
+        <span class="float-anim" style="font-size:58px;">🎉</span>
+        <div class="rainbow-text" style="font-size:26px;font-family:'Righteous',sans-serif;margin-top:12px;">Session Logged!</div>
+        <div style="font-size:14px;color:#b96effaa;margin-top:8px;">You're building back stronger ✨</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="content-wrap">
+    <!-- HEADER -->
+    <div style="padding:0;">
+      <div class="shimmer-bg" style="height:5px;"></div>
+      <div style="padding:24px 20px 16px;background:linear-gradient(180deg,#100c1e 0%,transparent 100%);">
+        <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:14px;">
+          <div>
+            <div style="font-size:10px;letter-spacing:4px;text-transform:uppercase;color:#6ee2ff;margin-bottom:5px;font-weight:800;">Calf Recovery · Feb 2026 →</div>
+            <div class="rainbow-text" style="font-size:30px;font-family:'Righteous',sans-serif;line-height:1;">Recovery Tracker</div>
+          </div>
+          <div class="pulse" style="background:linear-gradient(135deg,#b96eff,#ff6ef7);border-radius:14px;padding:10px 18px;text-align:center;min-width:58px;">
+            <div id="session-count" style="font-size:26px;font-weight:900;color:#fff;line-height:1;">0</div>
+            <div style="font-size:9px;text-transform:uppercase;letter-spacing:1px;color:rgba(255,255,255,0.8);margin-top:2px;">sessions</div>
+          </div>
+        </div>
+        <div id="progress-wrap" style="display:flex;align-items:center;gap:10px;">
+          <div style="flex:1;height:8px;background:#1a1030;border-radius:4px;overflow:hidden;">
+            <div id="progress-fill" class="shimmer-bg" style="height:100%;width:0%;border-radius:4px;transition:width .5s ease;background-size:300% auto;"></div>
+          </div>
+          <div id="progress-label" style="font-size:12px;color:#ff6ef7;font-weight:900;white-space:nowrap;">0/0</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- TABS -->
+    <div class="tabs-bar">
+      <button class="tab-btn" id="tab-today" onclick="setTab('today')" style="flex:1;padding:14px 0;font-size:13px;font-weight:900;color:#ff6ef7;border-bottom:3px solid #ff6ef7;text-shadow:0 0 12px #ff6ef799;">✨ Today</button>
+      <button class="tab-btn" id="tab-history" onclick="setTab('history')" style="flex:1;padding:14px 0;font-size:13px;font-weight:600;color:#555;border-bottom:3px solid transparent;">📅 History</button>
+      <button class="tab-btn" id="tab-weights" onclick="setTab('weights')" style="flex:1;padding:14px 0;font-size:13px;font-weight:600;color:#555;border-bottom:3px solid transparent;">🏋️ Weights</button>
+    </div>
+
+    <div style="padding:16px 16px 100px;" id="main-content"></div>
+  </div>
+</div>
+
+<script>
+// ── DATA ──────────────────────────────────────────────────────────────────────
+const PT = [
+  {id:"cs1",name:"Calf Stretch – Soleus",detail:"Wedge · knee bent · 3× · hold 30s",freq:"1×/day"},
+  {id:"cs2",name:"Calf Stretch – Gastroc",detail:"Wedge · knee straight · 3× · hold 30s",freq:"1×/day"},
+  {id:"ai", name:"Ankle Inversion Isometric",detail:"Inside foot → wall · 10× · hold 10s",freq:"1×/day"},
+  {id:"ae", name:"Ankle Eversion Isometric",detail:"Outside foot → wall · 10× · hold 10s",freq:"2×/day ⚡"},
+  {id:"bal",name:"Dynamic Single Leg Balance",detail:"Lean fwd/leg back → knee drive · 10–15 reps/leg · 3 rounds",freq:"1×/day"},
+  {id:"hr", name:"Seated Heel Raises",detail:"15 lb DB on thighs · 30 reps · hold 1s",freq:"1×/day"},
+];
+const WARMUP = ["Lymphatic hops","Arm pendulums","Dead arms","Ballerina squats","Body waves","Zen swings","Marches","Woodchoppers","Infinity swings","Deep squat"];
+const DEFAULT_LIFTS = [
+  {id:"squat",name:"DB Squat", sets:"5×5",weight:12.5,block:1},
+  {id:"bench",name:"DB Bench", sets:"5×5",weight:15,  block:1},
+  {id:"row",  name:"DB Row",   sets:"3×8",weight:15,  block:1},
+  {id:"rdl",  name:"DB RDL",   sets:"5×5",weight:20,  block:2},
+  {id:"ohp",  name:"DB OHP",   sets:"3×5",weight:20,  block:2},
+  {id:"lat",  name:"Lat Work", sets:"3×8",weight:null, block:2},
+];
+const DAYS = ["Mon","Tue","Wed","Thu","Fri","Sat","Sun"];
+const ACCENTS = [["#ff6ef7","#b96eff"],["#b96eff","#6ee2ff"],["#6ee2ff","#6effd8"],["#6effd8","#ff6ef7"],["#ffe16e","#ff6ef7"]];
+
+// ── STATE ─────────────────────────────────────────────────────────────────────
+function load(k,fb){try{const v=localStorage.getItem(k);return v?JSON.parse(v):fb;}catch{return fb;}}
+function save(k,v){try{localStorage.setItem(k,JSON.stringify(v));}catch{}}
+
+let lifts    = load("lifts_v2", DEFAULT_LIFTS);
+let sessions = load("sessions_v2", {});
+let travel   = false;
+let activeTab = "today";
+let editingWeightId = null;
+
+function todayIndex(){const d=new Date().getDay();return d===0?6:d-1;}
+function todayKey(){return new Date().toISOString().slice(0,10);}
+function getDayType(d){return d===6?"rest":d%2===0?"lift":"pt";}
+function getSession(key){return sessions[key]||{checked:{},note:"",done:false};}
+
+let activeDayIdx = todayIndex();
+
+// ── RENDER ────────────────────────────────────────────────────────────────────
+function render(){
+  updateHeader();
+  const c = document.getElementById('main-content');
+  if(activeTab==='today')    c.innerHTML = renderToday();
+  else if(activeTab==='history') c.innerHTML = renderHistory();
+  else                       c.innerHTML = renderWeights();
+  attachListeners();
+}
+
+function updateHeader(){
+  const hist = Object.values(sessions).filter(s=>s.done);
+  document.getElementById('session-count').textContent = hist.length;
+
+  const dk = todayKey();
+  const s = getSession(dk);
+  const dayType = getDayType(todayIndex());
+  const isRest = dayType==='rest';
+  const isLift = dayType==='lift';
+  const total = isRest?0:isLift?PT.length+lifts.length:PT.length;
+  const checked = isRest?0:PT.filter(e=>s.checked[e.id]).length+(isLift?lifts.filter(l=>s.checked[l.id]).length:0);
+  const pct = total?Math.round(checked/total*100):0;
+  document.getElementById('progress-fill').style.width = pct+'%';
+  document.getElementById('progress-label').textContent = checked+'/'+total;
+  document.getElementById('progress-wrap').style.display = (activeTab==='today'&&!isRest)?'flex':'none';
+}
+
+function setTab(t){
+  activeTab=t;
+  ['today','history','weights'].forEach(id=>{
+    const btn=document.getElementById('tab-'+id);
+    if(id===t){
+      btn.style.color='#ff6ef7';
+      btn.style.borderBottom='3px solid #ff6ef7';
+      btn.style.fontWeight='900';
+      btn.style.textShadow='0 0 12px #ff6ef799';
+    } else {
+      btn.style.color='#555';
+      btn.style.borderBottom='3px solid transparent';
+      btn.style.fontWeight='600';
+      btn.style.textShadow='none';
+    }
+  });
+  render();
+}
+
+function renderToday(){
+  const dk = todayKey();
+  const s = getSession(dk);
+  const dayType = getDayType(activeDayIdx);
+  const isToday = activeDayIdx===todayIndex();
+  const isLift = dayType==='lift';
+  const isRest = dayType==='rest';
+
+  let html = '';
+
+  // Travel toggle
+  html += `<div style="display:flex;background:#100c1e;border-radius:30px;padding:4px;border:1px solid #2a1545;margin-bottom:16px;">
+    <button onclick="setTravel(false)" style="flex:1;padding:9px 0;border-radius:26px;border:none;cursor:pointer;font-size:13px;font-weight:800;transition:all .25s;
+      background:${!travel?'linear-gradient(90deg,#b96eff,#ff6ef7)':'transparent'};
+      color:${!travel?'#fff':'#777'};
+      box-shadow:${!travel?'0 0 22px #b96eff77':'none'};">🏠 Home</button>
+    <button onclick="setTravel(true)" style="flex:1;padding:9px 0;border-radius:26px;border:none;cursor:pointer;font-size:13px;font-weight:800;transition:all .25s;
+      background:${travel?'linear-gradient(90deg,#b96eff,#ff6ef7)':'transparent'};
+      color:${travel?'#fff':'#777'};
+      box-shadow:${travel?'0 0 22px #b96eff77':'none'};">✈️ Travel</button>
+  </div>`;
+
+  // Day pills
+  html += `<div style="display:flex;gap:6px;justify-content:center;margin-bottom:14px;flex-wrap:wrap;">`;
+  DAYS.forEach((d,i)=>{
+    const t=getDayType(i);
+    const isActive=activeDayIdx===i;
+    const isTod=i===todayIndex();
+    html+=`<button class="day-btn" onclick="setDay(${i})" style="width:40px;height:52px;border-radius:12px;border:none;
+      background:${isActive?'linear-gradient(160deg,#ff6ef7,#b96eff,#6ee2ff)':isTod?'#1a0e2e':'#100c1e'};
+      color:#f0eaff;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;
+      box-shadow:${isActive?'0 0 24px #b96effaa,0 0 6px #ff6ef777':isTod?'0 0 0 1.5px #b96eff':'0 0 0 1px #1e1030'};
+      font-family:'Nunito',sans-serif;">
+      <span style="font-size:11px;font-weight:900;">${d}</span>
+      <span style="font-size:9px;">${t==='lift'?'💪':t==='rest'?'🌿':'🦵'}</span>
+    </button>`;
+  });
+  html+=`</div>`;
+
+  // Badge
+  html+=`<div style="text-align:center;margin-bottom:18px;">
+    <span style="display:inline-block;background:linear-gradient(90deg,#b96eff18,#ff6ef718,#6ee2ff18);border:1px solid #b96eff55;border-radius:20px;padding:6px 20px;font-size:13px;font-weight:800;box-shadow:0 0 14px #b96eff22;">
+      ${isRest?'🌿 Rest Day':isLift?'💪 Lift + PT':'🦵 PT Only'}
+      ${isToday?'<span style="margin-left:8px;color:#6ee2ff;font-size:11px;">· Today</span>':''}
+    </span>
+  </div>`;
+
+  if(isRest){
+    html+=`<div style="text-align:center;background:linear-gradient(135deg,#100c1e,#0a1020);border:1px solid #6effd822;border-radius:22px;padding:46px 24px;box-shadow:0 0 40px #6effd811;">
+      <span class="float-anim" style="font-size:54px;">🌿</span>
+      <div class="rainbow-text" style="font-size:24px;font-family:'Righteous',sans-serif;margin-top:14px;">Full Rest Day</div>
+      <div style="color:#6ee2ff88;font-size:13px;margin-top:8px;line-height:1.7;">Recovery is where the magic happens.<br>Hydrate, sleep, let that calf rebuild. 💜</div>
+    </div>`;
+    return html;
+  }
+
+  // PT section
+  html += funSection('🦵 PT Exercises','#ff6ef7', PT.map(ex=>{
+    const chk = s.checked[ex.id]||false;
+    return checkRow(ex.id, ex.name, ex.detail, ex.freq, chk, isToday);
+  }).join(''));
+
+  if(isLift){
+    // Warmup
+    const chips = WARMUP.map(w=>`<span style="background:#0e1a28;border:1px solid #6ee2ff33;border-radius:16px;padding:4px 11px;font-size:12px;color:#6ee2ff;font-weight:700;">${w}</span>`).join('');
+    html += funSection('🌀 Warm Up · 1 min each','#6ee2ff',
+      `<div style="display:flex;flex-wrap:wrap;gap:6px;padding:10px 14px 6px;">${chips}</div>
+       <div style="font-size:11px;color:#6ee2ff55;padding:4px 14px 12px;font-weight:700;">WU sets: 5 @ 50%, then 3 @ 75% · Rest 30s–1min between sets</div>`);
+
+    // Lifts
+    let liftRows = '';
+    [1,2].forEach(block=>{
+      liftRows+=`<div style="font-size:10px;letter-spacing:2px;text-transform:uppercase;color:#6effd8;padding:10px 14px 4px;font-weight:900;">Block ${block}</div>`;
+      lifts.filter(l=>l.block===block).forEach(lift=>{
+        const chk=s.checked[lift.id]||false;
+        const detail = lift.weight ? `${lift.weight} lb${travel?' (adjust as needed)':''}` : travel?'use available weight':'bodyweight/band';
+        liftRows += checkRow(lift.id, lift.sets+' '+lift.name, detail, null, chk, isToday);
+      });
+    });
+    html += funSection(travel?'✈️ Travel Lifts':'🏠 Lifting','#b96eff', liftRows);
+  }
+
+  if(isToday && !s.done){
+    html+=`<div style="background:#100c1e;border:1px solid #b96eff33;border-radius:18px;padding:16px;margin-top:4px;">
+      <div style="font-size:11px;letter-spacing:2px;text-transform:uppercase;color:#b96eff;margin-bottom:8px;font-weight:900;">Session Note</div>
+      <textarea id="note-input" rows="3" placeholder="Pain level, energy, how it felt…"></textarea>
+      <button onclick="logDone()" class="shimmer-bg" style="margin-top:12px;width:100%;padding:14px;border:none;border-radius:12px;color:#fff;font-size:15px;font-weight:900;cursor:pointer;letter-spacing:.5px;background-size:300% auto;box-shadow:0 0 28px #b96eff88,0 4px 20px #ff6ef755;">✓ Log Session Complete</button>
+    </div>`;
+  }
+
+  if(isToday && s.done){
+    html+=`<div style="display:flex;gap:12px;align-items:center;background:linear-gradient(90deg,#b96eff15,#ff6ef715,#6ee2ff15);border:1px solid #b96eff55;border-radius:14px;padding:16px;margin-top:8px;box-shadow:0 0 24px #b96eff22;">
+      <span style="font-size:26px;">✅</span>
+      <div>
+        <div style="font-weight:900;color:#ff6ef7;">Today logged!</div>
+        ${s.note?`<div style="font-size:12px;color:#b96effaa;margin-top:3px;">${s.note}</div>`:''}
+      </div>
+    </div>`;
+  }
+
+  return html;
+}
+
+function funSection(title,color,inner){
+  return `<div style="margin-bottom:20px;">
+    <div style="font-size:11px;letter-spacing:3px;text-transform:uppercase;color:${color};margin-bottom:10px;padding-left:2px;font-weight:900;text-shadow:0 0 12px ${color}99;">${title}</div>
+    <div style="background:#100c1e;border:1px solid ${color}28;border-radius:16px;overflow:hidden;box-shadow:0 0 20px ${color}0d;">${inner}</div>
+  </div>`;
+}
+
+function checkRow(id, label, detail, badge, checked, interactive){
+  const chkStyle = checked
+    ? 'background:linear-gradient(135deg,#b96eff,#ff6ef7);border:none;box-shadow:0 0 14px #b96effaa;'
+    : 'background:transparent;border:2px solid #3a2050;';
+  const onclick = interactive ? `onclick="toggleCheck('${id}')"` : '';
+  return `<div class="check-row" ${onclick} style="display:flex;align-items:flex-start;gap:12px;padding:13px 14px;border-bottom:1px solid #18102a;cursor:${interactive?'pointer':'default'};background:${checked?'rgba(185,110,255,0.1)':'transparent'};opacity:${interactive?1:0.55};">
+    <div style="width:22px;height:22px;border-radius:6px;flex-shrink:0;margin-top:1px;display:flex;align-items:center;justify-content:center;transition:all .2s;${chkStyle}">
+      ${checked?'<span style="font-size:12px;color:#fff;font-weight:900;">✓</span>':''}
+    </div>
+    <div style="flex:1;">
+      <div style="font-size:14px;font-weight:700;text-decoration:${checked?'line-through':'none'};opacity:${checked?0.4:1};">${label}</div>
+      ${detail?`<div style="font-size:11px;color:#6ee2ff77;margin-top:2px;">${detail}</div>`:''}
+    </div>
+    ${badge?`<div style="font-size:10px;background:#1a0e2e;border:1px solid #b96eff44;border-radius:10px;padding:2px 8px;color:#b96eff;white-space:nowrap;align-self:center;font-weight:800;">${badge}</div>`:''}
+  </div>`;
+}
+
+function renderHistory(){
+  const hist = Object.entries(sessions).filter(([,s])=>s.done).sort(([a],[b])=>b.localeCompare(a)).slice(0,30);
+  let html=`<div style="font-size:11px;letter-spacing:3px;text-transform:uppercase;color:#6ee2ff;margin-bottom:14px;padding-left:2px;font-weight:900;text-shadow:0 0 12px #6ee2ff88;">Past Sessions</div>`;
+  if(!hist.length){
+    html+=`<div style="text-align:center;color:#6ee2ff44;font-size:14px;line-height:1.8;padding:50px 0;">No sessions logged yet.<br>Complete today's workout to start your streak! 🌈</div>`;
+    return html;
+  }
+  hist.forEach(([date,s],idx)=>{
+    const d=new Date(date+'T12:00:00');
+    const dayI=d.getDay()===0?6:d.getDay()-1;
+    const dType=getDayType(dayI);
+    const count=Object.values(s.checked||{}).filter(Boolean).length;
+    const [c1,c2]=ACCENTS[idx%ACCENTS.length];
+    html+=`<div style="display:flex;justify-content:space-between;align-items:center;background:#100c1e;border:1px solid ${c1}44;border-radius:14px;padding:14px 16px;margin-bottom:8px;box-shadow:0 0 14px ${c1}18;">
+      <div>
+        <div style="font-size:14px;font-weight:800;">${d.toLocaleDateString('en-US',{month:'short',day:'numeric',weekday:'short'})}</div>
+        <div style="font-size:12px;color:#888;margin-top:2px;">${dType==='lift'?'💪 Lift + PT':dType==='rest'?'🌿 Rest':'🦵 PT Only'}</div>
+        ${s.note?`<div style="font-size:11px;color:${c1}bb;margin-top:4px;font-style:italic;">"${s.note}"</div>`:''}
+      </div>
+      <div style="font-size:24px;font-weight:900;background:linear-gradient(135deg,${c1},${c2});-webkit-background-clip:text;-webkit-text-fill-color:transparent;">${count} ✓</div>
+    </div>`;
+  });
+  return html;
+}
+
+function renderWeights(){
+  let html=`<div style="font-size:11px;letter-spacing:3px;text-transform:uppercase;color:#6effd8;margin-bottom:14px;padding-left:2px;font-weight:900;text-shadow:0 0 12px #6effd888;">Lift Weights</div>
+  <div style="font-size:12px;color:#6effd877;margin-bottom:16px;line-height:1.7;font-weight:700;">Tap any lift to update the weight. Bump 2.5–5 lb after 2 clean sessions in a row 🎯</div>`;
+
+  lifts.filter(l=>l.weight!==null).forEach((lift,idx)=>{
+    const [c1,c2]=ACCENTS[idx%ACCENTS.length];
+    if(editingWeightId===lift.id){
+      html+=`<div style="display:flex;align-items:center;justify-content:space-between;background:#100c1e;border:1px solid ${c1}33;border-radius:14px;padding:14px 16px;margin-bottom:8px;">
+        <div>
+          <div style="font-size:15px;font-weight:900;">${lift.name}</div>
+          <div style="font-size:12px;color:#777;margin-top:2px;">${lift.sets}</div>
+        </div>
+        <div style="display:flex;gap:6px;align-items:center;">
+          <input type="number" id="w-input" value="${lift.weight}" style="border:1.5px solid ${c1};" />
+          <button onclick="saveWeight('${lift.id}')" style="background:linear-gradient(90deg,${c1},${c2});border:none;border-radius:8px;padding:7px 12px;color:#fff;font-weight:900;cursor:pointer;font-size:13px;">Save</button>
+          <button onclick="cancelEdit()" style="background:transparent;border:1px solid #2a2040;border-radius:8px;padding:7px 10px;color:#666;cursor:pointer;font-size:13px;">✕</button>
+        </div>
+      </div>`;
+    } else {
+      html+=`<div style="display:flex;align-items:center;justify-content:space-between;background:#100c1e;border:1px solid ${c1}33;border-radius:14px;padding:14px 16px;margin-bottom:8px;box-shadow:0 0 10px ${c1}11;">
+        <div>
+          <div style="font-size:15px;font-weight:900;">${lift.name}</div>
+          <div style="font-size:12px;color:#777;margin-top:2px;">${lift.sets}</div>
+          ${lift.updatedAt?`<div style="font-size:10px;color:#444;margin-top:2px;">Updated ${lift.updatedAt}</div>`:''}
+        </div>
+        <button onclick="startEdit('${lift.id}')" class="weight-btn" style="background:linear-gradient(90deg,${c1}25,${c2}25);border:1.5px solid ${c1}77;border-radius:20px;padding:8px 16px;color:${c1};font-size:15px;font-weight:900;cursor:pointer;box-shadow:0 0 12px ${c1}44;transition:all .2s;">
+          ${lift.weight} lb <span style="font-size:11px;opacity:.6;">✏️</span>
+        </button>
+      </div>`;
+    }
+  });
+
+  html+=`<div style="position:relative;border-radius:17px;padding:2px;background:linear-gradient(135deg,#ff6ef7,#b96eff,#6ee2ff,#6effd8);background-size:200%;animation:shimmer 3s linear infinite;margin-top:8px;">
+    <div style="background:#0e0a1a;border-radius:15px;padding:18px;">
+      <div style="font-size:15px;font-weight:900;margin-bottom:10px;color:#ff6ef7;">📈 Progression Guide</div>
+      <div style="font-size:13px;line-height:1.85;color:#d0c8f0;">
+        <span style="color:#ff6ef7;font-weight:800;">All reps clean × 2 sessions?</span><br>
+        → Upper body: +2.5 lb &nbsp;·&nbsp; Lower body: +5 lb<br><br>
+        <span style="color:#b96eff;font-weight:800;">Struggling to finish sets?</span><br>
+        → Hold weight or drop 10%<br><br>
+        <span style="color:#6effd8;font-weight:800;">Calf feeling fatigued?</span><br>
+        → Reduce RDL/Squat, never skip PT 🦵
+      </div>
+    </div>
+  </div>`;
+  return html;
+}
+
+// ── ACTIONS ───────────────────────────────────────────────────────────────────
+function attachListeners(){}
+
+function setDay(i){activeDayIdx=i;render();}
+function setTravel(t){travel=t;render();}
+
+function toggleCheck(id){
+  const dk=todayKey();
+  const s=getSession(dk);
+  s.checked[id]=!s.checked[id];
+  sessions[dk]=s;
+  save('sessions_v2',sessions);
+  render();
+}
+
+function logDone(){
+  const note=document.getElementById('note-input')?.value||'';
+  const dk=todayKey();
+  const s=getSession(dk);
+  s.done=true; s.note=note; s.completedAt=new Date().toISOString();
+  sessions[dk]=s;
+  save('sessions_v2',sessions);
+  const cel=document.getElementById('celebration');
+  cel.classList.add('show');
+  setTimeout(()=>cel.classList.remove('show'),3200);
+  render();
+}
+
+function startEdit(id){editingWeightId=id;render();}
+function cancelEdit(){editingWeightId=null;render();}
+function saveWeight(id){
+  const val=parseFloat(document.getElementById('w-input')?.value);
+  if(!isNaN(val)&&val>0){
+    lifts=lifts.map(l=>l.id===id?{...l,weight:val,updatedAt:todayKey()}:l);
+    save('lifts_v2',lifts);
+  }
+  editingWeightId=null;
+  render();
+}
+
+// ── INIT ──────────────────────────────────────────────────────────────────────
+render();
+</script>
+</body>
+</html>
